@@ -18,29 +18,29 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "Sunshine");
     rlImGuiSetup(true);
 
-    vector<Rectangle> obstacles;
-    std::ifstream inFile("../game/assets/data/obstacles.txt");
-    while (!inFile.eof())
-    {
-        Rectangle obstacle;
-        inFile >> obstacle.x >> obstacle.y >> obstacle.width >> obstacle.height;
-        obstacles.push_back(obstacle);
-    }
-    inFile.close();
+    //vector<Rectangle> obstacles;
+    //std::ifstream inFile("../game/assets/data/obstacles.txt");
+    //while (!inFile.eof())
+    //{
+    //    Rectangle obstacle;
+    //    inFile >> obstacle.x >> obstacle.y >> obstacle.width >> obstacle.height;
+    //    obstacles.push_back(obstacle);
+    //}
+    //inFile.close();
 
     float playerRotation = 0.0f;
-    const float playerWidth = 60.0f;
-    const float playerHeight = 40.0f;
+    const float playerSpriteWidth = 32.0f;
+    const float playerSpriteHeight = 32.0f;
     const float playerRange = 1000.0f;
     const float playerRotationSpeed = 100.0f;
 
-    const char* recText = "Nearest to Rectangle";
-    const char* circleText = "Nearest to Circle";
-    const char* poiText = "Nearest Intersection";
-    const int fontSize = 10;
-    const int recTextWidth = MeasureText(recText, fontSize);
-    const int circleTextWidth = MeasureText(circleText, fontSize);
-    const int poiTextWidth = MeasureText(poiText, fontSize);
+    //const char* recText = "Nearest to Rectangle";
+    //const char* circleText = "Nearest to Circle";
+    //const char* poiText = "Nearest Intersection";
+    //const int fontSize = 10;
+    //const int recTextWidth = MeasureText(recText, fontSize);
+    //const int circleTextWidth = MeasureText(circleText, fontSize);
+    //const int poiTextWidth = MeasureText(poiText, fontSize);
 
     const Rectangle rectangle{ 1000.0f, 500.0f, 160.0f, 90.0f };
     const Circle circle{ { 1000.0f, 250.0f }, 50.0f };
@@ -58,22 +58,27 @@ int main(void)
         const Vector2 playerPosition = GetMousePosition();
         const Vector2 playerDirection = Direction(playerRotation * DEG2RAD);
         const Vector2 playerEnd = playerPosition + playerDirection * playerRange;
-        const Rectangle playerRec{ playerPosition.x, playerPosition.y, playerWidth, playerHeight };
+        //const Rectangle playerRec{ playerPosition.x, playerPosition.y, playerSpriteWidth, playerSpriteHeight };
 
-        const Vector2 nearestRecPoint = NearestPoint(playerPosition, playerEnd,
-            { rectangle.x + rectangle.width * 0.5f, rectangle.y + rectangle.height * 0.5f });
-        const Vector2 nearestCirclePoint = NearestPoint(playerPosition, playerEnd, circle.position);
-        Vector2 poi;
+        //const Vector2 nearestRecPoint = NearestPoint(playerPosition, playerEnd,
+        //    { rectangle.x + rectangle.width * 0.5f, rectangle.y + rectangle.height * 0.5f });
+        //const Vector2 nearestCirclePoint = NearestPoint(playerPosition, playerEnd, circle.position);
+        //Vector2 poi;
 
-        const bool collision = NearestIntersection(playerPosition, playerEnd, obstacles, poi);
-        const bool rectangleVisible = IsRectangleVisible(playerPosition, playerEnd, rectangle, obstacles);
-        const bool circleVisible = IsCircleVisible(playerPosition, playerEnd, circle, obstacles);
+        //const bool collision = NearestIntersection(playerPosition, playerEnd, obstacles, poi);
+        //const bool rectangleVisible = IsRectangleVisible(playerPosition, playerEnd, rectangle, obstacles);
+        //const bool circleVisible = IsCircleVisible(playerPosition, playerEnd, circle, obstacles);
+
+        int playerSpriteFrame = 1;
+        int* currentPlayerFrame = &playerSpriteFrame;
+        Texture2D LoadTexture(const char* = "../game/assets/textures/New Piskel (2).png");
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
         // Render player
-        DrawRectanglePro(playerRec, { playerWidth * 0.5f, playerHeight * 0.5f }, playerRotation, PURPLE);
+        DrawTexturePro()
+        //DrawRectanglePro(playerRec, { playerWidth * 0.5f, playerHeight * 0.5f }, playerRotation, PURPLE);
         DrawLine(playerPosition.x, playerPosition.y, playerEnd.x, playerEnd.y, BLUE);
         DrawCircleV(playerPosition, 10.0f, BLUE);
 
