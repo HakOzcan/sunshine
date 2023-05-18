@@ -2,6 +2,7 @@
 #include "rlImGui.h"
 #include "Physics.h"
 #include "Collision.h"
+#include "Math.h"
 
 #include <array>
 #include <vector>
@@ -11,107 +12,77 @@
 
 using namespace std;
 
+//Vector2 ChangePosition(const Vector2& position1, const Vector2& position2)
+//{
+//    return position1 + position2;
+//}
+
 int main(void)
 {
-    const int screenWidth = 1280;
-    const int screenHeight = 720;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
     InitWindow(screenWidth, screenHeight, "Sunshine");
-    rlImGuiSetup(true);
-
-    //vector<Rectangle> obstacles;
-    //std::ifstream inFile("../game/assets/data/obstacles.txt");
-    //while (!inFile.eof())
-    //{
-    //    Rectangle obstacle;
-    //    inFile >> obstacle.x >> obstacle.y >> obstacle.width >> obstacle.height;
-    //    obstacles.push_back(obstacle);
-    //}
-    //inFile.close();
 
     float playerRotation = 0.0f;
     const float playerSpriteWidth = 32.0f;
     const float playerSpriteHeight = 32.0f;
-    const float playerRange = 1000.0f;
+    const float playerSpeed = 500.0f;
     const float playerRotationSpeed = 100.0f;
 
-    //const char* recText = "Nearest to Rectangle";
-    //const char* circleText = "Nearest to Circle";
-    //const char* poiText = "Nearest Intersection";
-    //const int fontSize = 10;
-    //const int recTextWidth = MeasureText(recText, fontSize);
-    //const int circleTextWidth = MeasureText(circleText, fontSize);
-    //const int poiTextWidth = MeasureText(poiText, fontSize);
+    const char* playerSpriteFilePath = "../game/assets/textures/New Piskel (2).png";
+    Texture2D playerSprite = LoadTexture(playerSpriteFilePath);
 
-    const Rectangle rectangle{ 1000.0f, 500.0f, 160.0f, 90.0f };
-    const Circle circle{ { 1000.0f, 250.0f }, 50.0f };
+    Vector2 playerPosition = { 0.0f, 0.0f };
+    //const Vector2 playerDirection = Direction(playerRotation * DEG2RAD);
+    const Rectangle playerRecSrc{ 0, 0, playerSpriteWidth, playerSpriteHeight };
+    const Vector2 playerOrigin{ playerPosition.x + (playerSpriteWidth * 2), playerPosition.y + (playerSpriteHeight * 2)};
 
-    bool demoGUI = false;
     SetTargetFPS(60);
     while (!WindowShouldClose())
     {
+
         float dt = GetFrameTime();
         if (IsKeyDown(KEY_E))
             playerRotation += playerRotationSpeed * dt;
         if (IsKeyDown(KEY_Q))
             playerRotation -= playerRotationSpeed * dt;
+        //if (IsKeyDown(KEY_D))
+        //    playerPosition.x += playerSpeed * dt;
+        //if (IsKeyDown(KEY_A))
+        //    playerPosition.x -= playerSpeed * dt;
+        //if (IsKeyDown(KEY_W))
+        //    playerPosition.y -= playerSpeed * dt;
+        //if (IsKeyDown(KEY_S))
+        //    playerPosition.y += playerSpeed * dt;
 
-        const Vector2 playerPosition = GetMousePosition();
-        const Vector2 playerDirection = Direction(playerRotation * DEG2RAD);
-        const Vector2 playerEnd = playerPosition + playerDirection * playerRange;
-        //const Rectangle playerRec{ playerPosition.x, playerPosition.y, playerSpriteWidth, playerSpriteHeight };
+        playerPosition = GetMousePosition();
+        const Rectangle playerRecDst{ playerPosition.x, playerPosition.y, playerSpriteWidth * 4, playerSpriteHeight * 4 };
+        const Vector2 playerCircleOrigin{ playerPosition.x, playerPosition.y};
+        const Vector2 stationaryCircleOrigin{ 1600.0f, 200.0f };
+        const float circleRadius = playerRecDst.width / 2;
+        Color playerCircleColor = BLUE;
+        Color stationaryCircleColor = RED;
 
-        //const Vector2 nearestRecPoint = NearestPoint(playerPosition, playerEnd,
-        //    { rectangle.x + rectangle.width * 0.5f, rectangle.y + rectangle.height * 0.5f });
-        //const Vector2 nearestCirclePoint = NearestPoint(playerPosition, playerEnd, circle.position);
-        //Vector2 poi;
-
-        //const bool collision = NearestIntersection(playerPosition, playerEnd, obstacles, poi);
-        //const bool rectangleVisible = IsRectangleVisible(playerPosition, playerEnd, rectangle, obstacles);
-        //const bool circleVisible = IsCircleVisible(playerPosition, playerEnd, circle, obstacles);
-
-        int playerSpriteFrame = 1;
-        int* currentPlayerFrame = &playerSpriteFrame;
-        Texture2D LoadTexture(const char* = "../game/assets/textures/New Piskel (2).png");
+        if (CheckCollisionCircles(playerCircleOrigin, circleRadius, stationaryCircleOrigin, circleRadius))
+        {
+            playerCircleColor = RED;
+            stationaryCircleColor = BLUE;
+        }
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
+
+        DrawCircleV(playerCircleOrigin, circleRadius, playerCircleColor);
+        DrawCircleV(stationaryCircleOrigin, circleRadius, stationaryCircleColor);
         // Render player
-        DrawTexturePro()
-        //DrawRectanglePro(playerRec, { playerWidth * 0.5f, playerHeight * 0.5f }, playerRotation, PURPLE);
-        DrawLine(playerPosition.x, playerPosition.y, playerEnd.x, playerEnd.y, BLUE);
-        DrawCircleV(playerPosition, 10.0f, BLUE);
+        DrawTexturePro(playerSprite, playerRecSrc, playerRecDst, playerOrigin, playerRotation, YELLOW);
 
-        // Render geometry
-        for (const Rectangle& obstacle : obstacles)
-            DrawRectangleRec(obstacle, GREEN);
-        DrawRectangleRec(rectangle, rectangleVisible ? GREEN : RED);
-        DrawCircleV(circle.position, circle.radius, circleVisible ? GREEN : RED);
 
-        // Render labels
-        DrawText(circleText, nearestCirclePoint.x - circleTextWidth * 0.5f, nearestCirclePoint.y - fontSize * 2, fontSize, BLUE);
-        DrawCircleV(nearestRecPoint, 10.0f, BLUE);
-        DrawText(recText, nearestRecPoint.x - recTextWidth * 0.5f, nearestRecPoint.y - fontSize * 2, fontSize, BLUE);
-        DrawCircleV(nearestCirclePoint, 10.0f, BLUE);
-        if (collision)
-        {
-            DrawText(poiText, poi.x - poiTextWidth * 0.5f, poi.y - fontSize * 2, fontSize, BLUE);
-            DrawCircleV(poi, 10.0f, BLUE);
-        }
-
-        // Render GUI
-        if (IsKeyPressed(KEY_GRAVE)) demoGUI = !demoGUI;
-        if (demoGUI)
-        {
-            rlImGuiBegin();
-            ImGui::ShowDemoWindow(nullptr);
-            rlImGuiEnd();
-        }
 
         EndDrawing();
     }
 
-    rlImGuiShutdown();
     CloseWindow();
 
     return 0;
