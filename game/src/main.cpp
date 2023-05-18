@@ -37,6 +37,15 @@ int main(void)
     const Rectangle playerRecSrc{ 0, 0, playerSpriteWidth, playerSpriteHeight };
     const Vector2 playerOrigin{ playerPosition.x + (playerSpriteWidth * 2), playerPosition.y + (playerSpriteHeight * 2)};
 
+    const char* backgroundSpriteFilePath = "../game/assets/textures/Castle1.png";
+    Texture2D backgroundSprite = LoadTexture(backgroundSpriteFilePath);
+    const float backgroundSpriteWidth = 1280.0f;
+    const float backgroundSpriteHeight = 500.0f;
+    //const Vector2 backgroundPosition{ screenWidth / 2, screenHeight / 2 };
+    const Vector2 backgroundOrigin{ screenWidth / 2, screenHeight / 2 };
+    const Rectangle backgroundRecSrc{ 0, 0, backgroundSpriteWidth, backgroundSpriteHeight };
+    const Rectangle backgroundRecDst{ screenWidth / 2, screenHeight / 2, screenWidth, screenHeight };
+
     SetTargetFPS(60);
     while (!WindowShouldClose())
     {
@@ -60,19 +69,25 @@ int main(void)
         const Vector2 playerCircleOrigin{ playerPosition.x, playerPosition.y};
         const Vector2 stationaryCircleOrigin{ 1600.0f, 200.0f };
         const float circleRadius = playerRecDst.width / 2;
-        Color playerCircleColor = BLUE;
-        Color stationaryCircleColor = RED;
+        Color playerCircleColor = WHITE;
+        Color stationaryCircleColor = YELLOW;
+        Color backgroundColor = WHITE;
 
         if (CheckCollisionCircles(playerCircleOrigin, circleRadius, stationaryCircleOrigin, circleRadius))
         {
-            playerCircleColor = RED;
-            stationaryCircleColor = BLUE;
+            playerCircleColor = BLACK;
+            stationaryCircleColor = YELLOW;
+                if (playerCircleOrigin.x == stationaryCircleOrigin.x || playerCircleOrigin.y == stationaryCircleOrigin.y)
+                { 
+                backgroundColor = BLACK;
+                stationaryCircleColor = BLACK;
+                }
         }
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-
+        DrawTexturePro(backgroundSprite, backgroundRecSrc, backgroundRecDst, backgroundOrigin, NULL, backgroundColor);
         DrawCircleV(playerCircleOrigin, circleRadius, playerCircleColor);
         DrawCircleV(stationaryCircleOrigin, circleRadius, stationaryCircleColor);
         // Render player
