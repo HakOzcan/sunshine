@@ -1,5 +1,6 @@
 #include "rlImGui.h"
 #include "Math.h"
+
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
 
@@ -28,8 +29,8 @@ int main(void)
     Vector2 position{ 100.0f, 100.0f };
     Vector2 velocity{ 100.0f, 0.0f };
     Vector2 acceleration{ 0.0f, 100.0f };
-    float maxSpeed = 1000.0f;
-    float maxAccel = 1000.0f;
+    float maxSpeed = 2000.0f;
+    float maxAccel = 2000.0f;
     float circleRadius = 50.0f;
 
     Vector2 playerPosition{ 0.0f, 0.0f };
