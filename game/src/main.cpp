@@ -26,36 +26,39 @@ int main(void)
     rlImGuiSetup(true);
     SetTargetFPS(240);
 
-    Vector2 position{ 100.0f, 100.0f };
-    Vector2 velocity{ 100.0f, 0.0f };
-    Vector2 acceleration{ 0.0f, 100.0f };
+    Vector2 agentPos{ 100.0f, 100.0f };
+    Vector2 agentVel{ 100.0f, 0.0f };
+    Vector2 agentAccel{ 0.0f, 100.0f };
     float maxSpeed = 2000.0f;
     float maxAccel = 2000.0f;
     float circleRadius = 50.0f;
 
-    Vector2 playerPosition{ 0.0f, 0.0f };
+    Vector2 playerPos{ 0.0f, 0.0f };
 
     while (!WindowShouldClose())
     {
         const float deltaTime = GetFrameTime();
-        playerPosition = GetMousePosition();
+        playerPos = GetMousePosition();
 
 
-        Vector2 displacement = velocity * deltaTime;
-        position = (position + displacement) + (acceleration * 0.5f * deltaTime * deltaTime);
-        velocity = velocity + acceleration * deltaTime;
+        Vector2 displacement = agentVel * deltaTime;
+        agentPos = (agentPos + displacement) + (agentAccel * 0.5f * deltaTime * deltaTime);
+        agentVel = agentVel + agentAccel * deltaTime;
 
-        Vector2 toPlayer = playerPosition - position;
+        Vector2 toPlayer = agentPos - playerPos;
         Vector2 unitVToPlayer = toPlayer / GetMagnitude(toPlayer);
         Vector2 desiredVel = unitVToPlayer * maxSpeed;
-        Vector2 deltaVel = desiredVel - velocity;
+        Vector2 deltaVel = desiredVel - agentVel;
 
-        acceleration = unitVToPlayer * maxAccel;
-        velocity = deltaVel + acceleration * deltaTime * (GetMagnitude(toPlayer) / circleRadius);
 
-        float currentSpeed = GetMagnitude(velocity);
+
+        agentVel = deltaVel + agentAccel * deltaTime * (GetMagnitude(toPlayer) / circleRadius);
+
+        float currentSpeed = GetMagnitude(agentVel);
         if (currentSpeed > maxSpeed)
-            velocity = velocity * (maxSpeed / currentSpeed);
+            agentVel = agentVel * (maxSpeed / currentSpeed);
+
+        Vector2 agentWrappedPos = WraparoundScreen(agentPos);
 
 
         BeginDrawing();
@@ -63,13 +66,15 @@ int main(void)
 
         rlImGuiBegin();
 
-        ImGui::DragFloat2("position", &(position.x), 1, 0, SCREEN_WIDTH);
-        ImGui::DragFloat2("velocity", &(velocity.x), 1, -maxSpeed, maxSpeed);
-        ImGui::DragFloat2("acceleration", &(acceleration.x), 1, -maxAccel, maxAccel);
+        ImGui::DragFloat2("position", &(agentPos.x), 1, 0, SCREEN_WIDTH);
+        ImGui::DragFloat2("velocity", &(agentVel.x), 1, -maxSpeed, maxSpeed);
+        ImGui::DragFloat2("acceleration", &(agentAccel.x), 1, -maxAccel, maxAccel);
         rlImGuiEnd();
 
-        DrawCircleV(WraparoundScreen(position), circleRadius, BLACK);
-        DrawCircleV(playerPosition, circleRadius, BLUE);
+        DrawLineV(agentPos, agentVel, RED);
+        DrawLineV(agentPos, agentAccel, GREEN);
+        DrawCircleV(agentWrappedPos, circleRadius, BLACK);
+        DrawCircleV(playerPos, circleRadius, BLUE);
 
         DrawFPS(10, 10);
 
