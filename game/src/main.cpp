@@ -5,7 +5,7 @@
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
 
-Vector2 WraparoundScreen(Vector2& position)
+Vector2 WraparoundScreen(Vector2 position)
 {
     Vector2 outPosition =
     {
@@ -15,11 +15,6 @@ Vector2 WraparoundScreen(Vector2& position)
     return outPosition;
 }
 
-float GetMagnitude(Vector2 vector)
-{
-    float magnitude = vector.x * vector.x + vector.y * vector.y;
-    return sqrtf(magnitude);
-}
 
 class Rigidbody
 {
@@ -36,21 +31,6 @@ public:
     {
         this->objectPos = objectPos, this->objectVel = objectVel, this->objectAccel = objectAccel; 
     }
-
-    void SetPosition(Vector2 pos)
-    {
-        objectPos = pos;
-    }
-
-    void SetPositionX(float posx)
-    {
-        objectPos.x = posx;
-    }
-    void SetPositionY(float posy)
-    {
-        objectPos.y = posy;
-    }
-
 
      Vector2 GetPosition() { return objectPos; }
      Vector2 GetVelocity() { return objectVel; }
@@ -122,11 +102,11 @@ int main(void)
     SetTargetFPS(240);
 
     Agent a1 = Agent(1500.0f, 1500.0f);
-    a1.object.SetPosition({ 100.0f, 100.0f });
+    a1.object.objectPos = { 100.0f, 100.0f };
     Agent a2 = Agent(1250.0f, 1250.0f);
-    a2.object.SetPosition({ 200.0f, 200.0f });
+    a2.object.objectPos = { 200.0f, 200.0f };
     Agent a3 = Agent(1000.0f, 1000.0f);
-    a3.object.SetPosition({ 300.0f, 300.0f });
+    a3.object.objectPos = { 300.0f, 300.0f };
 
     std::vector<Agent> agents;
     
@@ -166,14 +146,10 @@ int main(void)
          }
         }
         
-
         for (int i = 0; i < pObjects.size(); i++)
         {
             pObjects[i].Update(deltaTime);
-            WraparoundScreen(pObjects[i].objectPos);
         }
-
-
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
