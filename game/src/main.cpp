@@ -50,8 +50,8 @@ public:
 class Agent
 {
 public:
-    float maxSpeed = 2000.0f;
-    float maxAccel = 2000.0f;
+    float maxSpeed = 1000.0f;
+    float maxAccel = 1000.0f;
     
 public:
     Rigidbody object;
@@ -75,7 +75,8 @@ public:
 
 Vector2 Seek(const Vector2& targetPos, const Vector2& agentPos, Vector2 agentVel, float maxSpeed, float maxAccel)
 {
-    Vector2 toPlayer = Normalize(targetPos - agentPos);
+    Vector2 toPlayer = targetPos - agentPos;
+    Vector2 normToPlayer = Normalize(toPlayer);
     Vector2 desiredVel = toPlayer * maxSpeed;
     Vector2 deltaVel = desiredVel - agentVel;
     Vector2 accel = Normalize(deltaVel) * maxAccel;
