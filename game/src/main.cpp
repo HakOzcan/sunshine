@@ -1,11 +1,13 @@
 #include "rlImGui.h"
 #include "Math.h"
+#include "Collision.h"
 #include <vector>
+#include <time.h>
 
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
 
-Vector2 WraparoundScreen(Vector2 position)
+Vector2 WraparoundScreen(Vector2& position)
 {
     Vector2 outPosition =
     {
@@ -15,7 +17,6 @@ Vector2 WraparoundScreen(Vector2 position)
     return outPosition;
 }
 
-
 class Rigidbody
 {
 public:
@@ -23,28 +24,24 @@ public:
     Vector2 objectVel{ 50.0f, 0.0f };
     Vector2 objectAccel{ 0.0f, 100.0f };
     const float kCircleRadius { 50.0f };
+    float rotation{ 0.0f };
+    float rotationSpeed = 100.0f;
+    static const int s_kWhiskerCount = 4;
+    bool detection[s_kWhiskerCount] {};
+    float whiskerLength = 250.0f;
+    Vector2 whiskers[s_kWhiskerCount] = { {0,0},{0,0} ,{0,0} ,{0,0} };
+
 
 public:
     Rigidbody() {};
 
-    Rigidbody(Vector2 objectPos, Vector2 objectVel, Vector2 objectAccel)
+    Rigidbody(Vector2 position, Vector2 velocity, Vector2 acceleration) 
+        : objectPos(position)
+        , objectVel(velocity)
+        , objectAccel(acceleration)
     {
-        this->objectPos = objectPos, this->objectVel = objectVel, this->objectAccel = objectAccel; 
+
     }
-
-     Vector2 GetPosition() { return objectPos; }
-     Vector2 GetVelocity() { return objectVel; }
-     Vector2 GetAcceleration() { return objectAccel; }
-     float GetCircleRadius() { return kCircleRadius; }
-
-     void Update(const float deltaTime)//Vector2& pos, Vector2& vel, Vector2 accel, const float deltaTime
-     {
-         objectPos = objectPos + (objectVel * deltaTime) + (objectAccel * 0.5f * deltaTime * deltaTime);
-
-         objectVel = objectVel + (objectAccel * deltaTime);
-
-         objectAccel = { 0 };
-     }
 };
 
 class Agent
@@ -52,24 +49,91 @@ class Agent
 public:
     float maxSpeed = 1000.0f;
     float maxAccel = 1000.0f;
-    
+
+
 public:
     Rigidbody object;
 
     Agent() {};
 
-    Agent(float maxSpeed, float maxAccel)
+    Agent(float speed, float acceleration)
+        : maxSpeed(speed)
+        , maxAccel(acceleration)
     {
-        this->maxSpeed = maxSpeed, this->maxAccel = maxAccel;
     }
 
-    float GetMaxSpeed()
+    void Update(const float deltaTime)
     {
-        return maxSpeed;
+
+        object.rotation = AngleFromVector();
+
+        UpdateWhiskers();
+
+        if (Length(object.objectVel) > this->maxSpeed)
+            object.objectVel = object.objectVel * (this->maxSpeed / Length(object.objectVel));
+
+
+        object.objectVel = object.objectVel + (object.objectAccel * deltaTime);
+        
+        object.objectPos = object.objectPos + (object.objectVel * deltaTime) + (object.objectAccel * 0.5f * deltaTime * deltaTime);
+
+        object.objectPos = WraparoundScreen(object.objectPos);
+
+
+        object.objectAccel = { 0,0 };
     }
-    float GetMaxAccel()
+
+    float AngleFromVector()
     {
-        return maxAccel;
+        Vector2 normVector = Normalize(object.objectVel);
+        float angleInDegrees = atan2f(normVector.y, normVector.x) * RAD2DEG;
+        angleInDegrees = fmodf(angleInDegrees + 360, 360);
+
+        return angleInDegrees;
+    }
+
+    Vector2 VectorFromAngleDegrees(float angleInDegrees)
+    {
+        return Vector2{ cosf(angleInDegrees * DEG2RAD), sinf(angleInDegrees * DEG2RAD)};
+    }
+
+    void UpdateWhiskers()
+    {
+        float whiskerFL = fmodf(object.rotation - 30.0f + 360.0f, 360.0f);
+        float whiskerL = fmodf(object.rotation - 15.0f + 360.0f, 360.0f);
+        float whiskerR = fmodf(object.rotation + 15.0f + 360.0f, 360.0f);
+        float whiskerFR = fmodf(object.rotation + 30.0f + 360.0f, 360.0f);
+
+
+        object.whiskers[0] = VectorFromAngleDegrees(whiskerFL) * object.whiskerLength;
+        object.whiskers[1] = VectorFromAngleDegrees(whiskerL) * object.whiskerLength;
+        object.whiskers[2] = VectorFromAngleDegrees(whiskerR) * object.whiskerLength;
+        object.whiskers[3] = VectorFromAngleDegrees(whiskerFR) * object.whiskerLength;
+    }
+
+    bool IsWhiskerColliding(int index, Vector2 circlePosition, float circleRadius)
+    {
+        Vector2 nearest = NearestPoint(object.objectPos, object.objectPos + object.whiskers[index], circlePosition);
+        object.detection[index] = DistanceSqr(nearest, circlePosition) <= circleRadius * circleRadius;
+        
+        return object.detection[index];
+    }
+
+    void RotateAgent(Vector2 targetPos, float deltaTime)
+    {
+        for (int i = 0; i < object.s_kWhiskerCount; i++)
+        {
+            this->IsWhiskerColliding(i, targetPos, object.kCircleRadius);
+        }
+
+        if (object.detection[0] || object.detection[1])
+        {
+            object.objectVel = Rotate(object.objectVel, object.rotationSpeed * deltaTime * DEG2RAD);
+        }
+        if (object.detection[2] || object.detection[3])
+        {
+            object.objectVel = Rotate(object.objectVel, -object.rotationSpeed * deltaTime * DEG2RAD);
+        }
     }
 };
 
@@ -102,34 +166,17 @@ int main(void)
     //rlImGuiSetup(true);
     SetTargetFPS(240);
 
-    Agent a1 = Agent(1500.0f, 1500.0f);
-    a1.object.objectPos = { 100.0f, 100.0f };
-    Agent a2 = Agent(1250.0f, 1250.0f);
-    a2.object.objectPos = { 200.0f, 200.0f };
-    Agent a3 = Agent(1000.0f, 1000.0f);
-    a3.object.objectPos = { 300.0f, 300.0f };
+    srand((unsigned)time(NULL));
 
-    std::vector<Agent> agents;
+    std::vector<Agent*> agents;
+    std::vector<Rigidbody*> obstacles;
     
-    agents.push_back(a1);
-    agents.push_back(a2);
-    agents.push_back(a3);
+    for (int i = 0; i < 3; i++)
+    {
+        agents.push_back(new Agent(static_cast<float>(GetRandomValue(500, 750)), static_cast<float>(GetRandomValue(500, 750))));
+        agents[i]->object.objectPos = { static_cast<float>(GetRandomValue(500, 1000)) , static_cast<float>(GetRandomValue(500, 1000)) };
+    }
 
-    std::vector<Rigidbody> pObjects;
-
-    pObjects.push_back(a1.object);
-    pObjects.push_back(a2.object);
-    pObjects.push_back(a3.object);
-
-    Rigidbody o1 = Rigidbody({ 800.0f, 800.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f });
-    Rigidbody o2 = Rigidbody({ 1000.0f, 800.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f });
-    Rigidbody o3 = Rigidbody({ 1500.0f, 800.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f });
-
-    std::vector<Rigidbody> obstacles;
-
-    obstacles.push_back(o1);
-    obstacles.push_back(o2);
-    obstacles.push_back(o3);
 
 
     while (!WindowShouldClose())
@@ -137,20 +184,33 @@ int main(void)
         float deltaTime = GetFrameTime();
         Vector2 playerPos = GetMousePosition();
 
-        for (int i = 0; i < pObjects.size(); i++)
+        if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
         {
-         pObjects[i].objectAccel = Flee(obstacles[i].GetPosition(), pObjects[i].GetPosition(), pObjects[i].GetVelocity(), agents[i].maxSpeed * 0.5f, agents[i].maxAccel * 0.5f);
-         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-         {
-             //Seek(playerPos, pObjects[i].GetPosition(), pObjects[i].GetVelocity(), agents[i].maxSpeed, agents[i].maxAccel);
-             pObjects[i].objectAccel = pObjects[i].objectAccel + Seek(playerPos, pObjects[i].GetPosition(), pObjects[i].GetVelocity(), agents[i].maxSpeed, agents[i].maxAccel);
-         }
+            obstacles.push_back(new Rigidbody({ playerPos.x, playerPos.y }, { 0,0 }, { 0,0 }));
         }
-        
-        for (int i = 0; i < pObjects.size(); i++)
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
         {
-            pObjects[i].Update(deltaTime);
+            for (Agent* agent : agents)
+                agent->object.objectAccel = Seek(playerPos, agent->object.objectPos, agent->object.objectVel, agent->maxSpeed, agent->maxAccel);
         }
+
+        for (Agent* agent : agents)
+        {
+            agent->Update(deltaTime);
+        }
+       
+        if (obstacles.capacity() != 0)
+        {
+            for (Agent* agent : agents)
+            {
+                for (Rigidbody* obstacle : obstacles)
+                {
+                    agent->RotateAgent(obstacle->objectPos, deltaTime);
+                }
+            }
+        }
+
+
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -161,12 +221,25 @@ int main(void)
         //ImGui::DragFloat2("acceleration", &(agentAccel.x), 1, -maxAccel, maxAccel);
         //rlImGuiEnd();
 
-        //DrawLineV(agentPos, agentVel, RED);
-        //DrawLineV(agentPos, agentAccel, GREEN);
-        for (int i = 0; i < pObjects.size(); i++)
+        for (Agent* agent : agents)
         {
-            DrawCircleV(WraparoundScreen(pObjects[i].GetPosition()), pObjects[i].GetCircleRadius(), RED);
-            DrawCircleV(obstacles[i].GetPosition(), obstacles[i].GetCircleRadius(), YELLOW);
+            DrawCircleV(agent->object.objectPos, agent->object.kCircleRadius, RED);
+        }
+
+        if (obstacles.capacity() != 0)
+        {
+            for (Rigidbody* obstacle : obstacles)
+            {
+                DrawCircleV(obstacle->objectPos, obstacle->kCircleRadius, YELLOW);
+            }
+        }
+
+        for (Agent* agent : agents)
+        {
+            for (int x = 0; x < agent->object.s_kWhiskerCount; x++)
+            {
+                DrawLineV(agent->object.objectPos, agent->object.objectPos + agent->object.whiskers[x], (agent->object.detection[x]) ? RED : GREEN);
+            }
         }
 
         DrawCircleV(playerPos, 50, BLUE);
