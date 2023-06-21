@@ -99,12 +99,12 @@ public:
 
     void UpdateWhiskers()
     {
-        float whiskerFL = fmodf(object.rotation - 30.0f + 360.0f, 360.0f);
-        float whiskerL = fmodf(object.rotation - 15.0f + 360.0f, 360.0f);
-        float whiskerR = fmodf(object.rotation + 15.0f + 360.0f, 360.0f);
-        float whiskerFR = fmodf(object.rotation + 30.0f + 360.0f, 360.0f);
-
-
+        float whiskerFL = object.rotation - 30.0f;
+        float whiskerL = object.rotation - 15.0f;
+        float whiskerR = object.rotation + 15.0f;
+        float whiskerFR = object.rotation + 30.0f;
+       
+       
         object.whiskers[0] = VectorFromAngleDegrees(whiskerFL) * object.whiskerLength;
         object.whiskers[1] = VectorFromAngleDegrees(whiskerL) * object.whiskerLength;
         object.whiskers[2] = VectorFromAngleDegrees(whiskerR) * object.whiskerLength;
