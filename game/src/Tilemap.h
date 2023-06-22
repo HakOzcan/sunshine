@@ -1,9 +1,11 @@
 #pragma once
 #include "raylib.h"
 #include "TileCoord.h"
+#include <string>
+#include<vector>
 
-#define MAP_WIDTH 32
-#define MAP_HEIGHT 32
+#define MAP_WIDTH 10
+#define MAP_HEIGHT 10
 
 enum class Tile
 {
@@ -15,43 +17,117 @@ enum class Tile
 class Tilemap
 {
 public:
-	float tileSizeX = 32;
-	float tileSizeY = 32;
+	float tileSizeX = 100;
+	float tileSizeY = 100;
+	const Vector2 NORTH = { -1,0 };
+	const Vector2 SOUTH = { 1,0 };
+	const Vector2 EAST = { 0,1 };
+	const Vector2 WEST = { 0,-1 };
 	Color tileColors[(int)Tile::Count];
 
 	Tile tiles[MAP_WIDTH][MAP_HEIGHT];
 
-	Vector2 GetScreenPositionOfTile(TileCoord coordinate)
-	{
-		return { coordinate.x * tileSizeX, coordinate.y * tileSizeY };
-	}
-
 	Tilemap()
 	{
-		tileColors[(int)Tile::Floor] = YELLOW;
-		tileColors[(int)Tile::Wall] = RED;
+		tileColors[(int)Tile::Floor] = WHITE;
+		tileColors[(int)Tile::Wall] = BLACK;
+	}
+
+	int GetGridWidth() { return MAP_WIDTH; }
+	int GetGridHeight() { return MAP_HEIGHT; }
+
+	Tile GetTile(int x, int y)
+	{
+		return tiles[x][y];
+	}
+
+	void SetTile(int x, int y, Tile type)
+	{
+		this->tiles[x][y] = type;
+	}
+
+	bool IsInsideGrid(int x, int y)
+	{
+		bool isInside = false;
+		if (x >= 0 && x < GetGridWidth())
+		{
+			if (y >= 0 && y < GetGridHeight())
+			{
+				isInside = true;
+			}
+		}
+		return isInside;
+	}
+
+	Vector2 GetScreenPositionOfTile(TileCoord coordinate)
+	{
+		return Vector2{ static_cast<float>(coordinate.x * tileSizeX),static_cast<float>(coordinate.y * tileSizeY) };
+	}
+
+	Vector2 ScreenPosToTilePos(Vector2 positionOnScreen)
+	{
+		return { floorf(positionOnScreen.x / tileSizeX), floorf(positionOnScreen.y / tileSizeY) };
+	}
+
+	Vector2 TilePosToScreenPos(Vector2 positionOnTile)
+	{
+		return Vector2{ static_cast<float>(positionOnTile.x * tileSizeX),static_cast<float>(positionOnTile.y * tileSizeY) };
 	}
 
 	void RandomizeMap()
 	{
-		for (int x = 0; x < MAP_WIDTH; x++)
+		for (int x = 0; x < this->GetGridWidth(); x++)
 		{
-			for (int y = 0; y < MAP_HEIGHT; y++)
+			for (int y = 0; y < this->GetGridHeight(); y++)
 			{
-				tiles[x][y] = (Tile) (rand() % (int)Tile::Count);
+				int chanceOfWall = 40;
+				int rollForWall = rand() % 100;
+
+				if(rollForWall >= chanceOfWall)
+					this->SetTile(x, y, Tile::Floor);
+				else
+					this->SetTile(x, y, Tile::Wall);
+				
 			}
 		}
 	}
 
 	void DrawBorders(Color color = BLACK)
 	{
-		for (int x = 0; MAP_WIDTH; x++)
-			DrawLine(x * tileSizeX, 0, x * tileSizeX, MAP_HEIGHT * tileSizeY, color);
-		for (int y = 0; MAP_HEIGHT; y++)
-			DrawLine(0, y * tileSizeY, MAP_WIDTH * tileSizeX, y * tileSizeY, color);
+		for (int x = 0; x <= GetGridWidth(); x++)
+			DrawLine(x * tileSizeX, 0, x * tileSizeX, GetGridHeight() * tileSizeY, color);
+		for (int y = 0; y <= GetGridHeight(); y++)
+			DrawLine(0, y * tileSizeY, GetGridWidth() * tileSizeX, y * tileSizeY, color);
 	}
 
+	bool IsTraversible(Vector2 tilePosition)
+	{
+		bool isTraversible = false;
+		if (IsInsideGrid(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)))
+		{
+			if (GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)) == Tile::Floor)
+			{
+				isTraversible = true;
+			}
+		}
+		return isTraversible;
+	}
 
+	std::vector<Vector2> GetTraversibleTilesAdjacentTo(Vector2 tilePos)
+	{
+		std::vector<Vector2> adjacentTilePositions;
+
+		Vector2 N = tilePos + NORTH;
+		Vector2 S = tilePos + SOUTH;
+		Vector2 E = tilePos + EAST;
+		Vector2 W = tilePos + WEST;
+		if (IsTraversible(N)) adjacentTilePositions.push_back(N);
+		if (IsTraversible(S)) adjacentTilePositions.push_back(S);
+		if (IsTraversible(E)) adjacentTilePositions.push_back(E);
+		if (IsTraversible(W)) adjacentTilePositions.push_back(W);
+
+		return adjacentTilePositions;
+	}
 
 	void DrawTiles()
 	{
@@ -60,11 +136,33 @@ public:
 			for (int y = 0; y < MAP_HEIGHT; y++)
 			{
 				Tile tileType = tiles[x][y];
-				Color tileColor = tileColors[(int)tileType];
+				TileCoord coordinatesOfTile = { x,y };
+				Vector2 vec2CoordinatesOfTile = { x,y };
+				float addForCenterX = tileSizeX / 2;
+				float addForCenterY = tileSizeY / 2;
+				Color tileColor = tileColors[static_cast<int>(tileType)];
+				std::string tileCoordinatesToDraw = std::to_string(x) + "," + std::to_string(y);
 
 				DrawRectangle(x * tileSizeX, y * tileSizeY, tileSizeX, tileSizeY, tileColor);
+				DrawText(tileCoordinatesToDraw.c_str(), x * tileSizeX + 5, y * tileSizeY + 5, 10, RED);
+				if(tileType == Tile::Floor)
+				DrawCircle(GetScreenPositionOfTile(coordinatesOfTile).x + addForCenterX, GetScreenPositionOfTile(coordinatesOfTile).y + addForCenterY, 10, GREEN);
+				
+				if (tileType == Tile::Floor)
+				{
+					std::vector<Vector2> traversibleAdjacentTiles = GetTraversibleTilesAdjacentTo(vec2CoordinatesOfTile);
+					if (traversibleAdjacentTiles.size() > 0)
+					{
+						for (int i = 0; i < traversibleAdjacentTiles.size(); i++)
+						{
+							Vector2 screenPosOfTraversibleAdjacentTile = TilePosToScreenPos(traversibleAdjacentTiles[i]);
+							DrawLine(GetScreenPositionOfTile(coordinatesOfTile).x + addForCenterX, GetScreenPositionOfTile(coordinatesOfTile).y + addForCenterY, screenPosOfTraversibleAdjacentTile.x + addForCenterX, screenPosOfTraversibleAdjacentTile.y + addForCenterY, GREEN);
+						}
+					}
+				}
 			}
 		}
 	}
+
 	
 };
