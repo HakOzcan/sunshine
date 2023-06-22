@@ -83,11 +83,11 @@ public:
 				int chanceOfWall = 40;
 				int rollForWall = rand() % 100;
 
-				if(rollForWall >= chanceOfWall)
+				if (rollForWall >= chanceOfWall)
 					this->SetTile(x, y, Tile::Floor);
 				else
 					this->SetTile(x, y, Tile::Wall);
-				
+
 			}
 		}
 	}
@@ -145,9 +145,9 @@ public:
 
 				DrawRectangle(x * tileSizeX, y * tileSizeY, tileSizeX, tileSizeY, tileColor);
 				DrawText(tileCoordinatesToDraw.c_str(), x * tileSizeX + 5, y * tileSizeY + 5, 10, RED);
-				if(tileType == Tile::Floor)
-				DrawCircle(GetScreenPositionOfTile(coordinatesOfTile).x + addForCenterX, GetScreenPositionOfTile(coordinatesOfTile).y + addForCenterY, 10, GREEN);
-				
+				if (tileType == Tile::Floor)
+					DrawCircle(GetScreenPositionOfTile(coordinatesOfTile).x + addForCenterX, GetScreenPositionOfTile(coordinatesOfTile).y + addForCenterY, 10, GREEN);
+
 				if (tileType == Tile::Floor)
 				{
 					std::vector<Vector2> traversibleAdjacentTiles = GetTraversibleTilesAdjacentTo(vec2CoordinatesOfTile);
@@ -164,5 +164,5 @@ public:
 		}
 	}
 
-	
+
 };
