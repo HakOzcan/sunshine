@@ -8,6 +8,7 @@ public:
 	Tilemap tileMap;
 	float ratScreenPosX;
 	float ratScreenPosY;
+	Tile tiles[10][10];
 
 	Rat()
 	{
@@ -27,8 +28,9 @@ public:
 		if (IsKeyPressed(KEY_W))
 		{
 			Vector2 tempPos = this->ratPos + this->tileMap.NORTH;
-			bool canRatGoN = this->tileMap.IsTraversible(ratPos);
-			if (canRatGoN)
+			bool isInside = this->tileMap.IsInsideGrid(ratPos.x, ratPos.y);
+			//bool isItFloor = this->tileMap.IsItFloor(ratPos.x, ratPos.y);
+			if (isInside)
 			{
 				this->ratPos = this->tileMap.NORTH;
 				this->ratScreenPosY -= this->tileMap.tileSizeY;
@@ -38,7 +40,7 @@ public:
 		{
 			Vector2 tempPos = this->ratPos + this->tileMap.WEST;
 			bool canRatGoW = this->tileMap.IsTraversible(ratPos);
-			if (canRatGoW)
+			if (!canRatGoW)
 			{
 				this->ratPos = this->tileMap.WEST;
 				this->ratScreenPosX -= this->tileMap.tileSizeX;
@@ -48,20 +50,20 @@ public:
 		{
 			Vector2 tempPos = this->ratPos + this->tileMap.SOUTH;
 			bool canRatGoS = this->tileMap.IsTraversible(ratPos);
-			if (canRatGoS)
+			if (!canRatGoS)
 			{
 				this->ratPos = this->tileMap.SOUTH;
-				this->ratScreenPosX += this->tileMap.tileSizeX;
+				this->ratScreenPosY += this->tileMap.tileSizeY;
 			}
 		}
 		if (IsKeyPressed(KEY_D))
 		{
 			Vector2 tempPos = this->ratPos + this->tileMap.EAST;
 			bool canRatGoE = this->tileMap.IsTraversible(ratPos);
-			if (canRatGoE)
+			if (!canRatGoE)
 			{
 				this->ratPos = this->tileMap.EAST;
-				this->ratScreenPosY += this->tileMap.tileSizeY;
+				this->ratScreenPosX += this->tileMap.tileSizeX;
 			}
 		}
 	}

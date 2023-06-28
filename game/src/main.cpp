@@ -6,7 +6,6 @@
 #define SCREEN_HEIGHT 1080
 
 Tilemap map;
-Rat* rat;
 
 int main(void)
 {
@@ -17,6 +16,8 @@ int main(void)
 
     map.RandomizeMap();
     Texture2D ratTexture = LoadTexture("../game/assets/textures/Rat.png");
+    Vector2 currentRatPos = { 100,100 };
+    Tilemap rat = Tilemap(currentRatPos);
 
     bool useGUI = false;
     SetTargetFPS(60);
@@ -24,9 +25,52 @@ int main(void)
     {
         float deltaTime = GetFrameTime();
 
-        if (rat != nullptr)
+        //if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        //{
+        //    Vector2 currentRatPos = GetMousePosition();
+        //    Tilemap rat = Tilemap(currentRatPos);
+        //}
+
+        if (IsKeyPressed(KEY_W))
         {
-            rat->Update();
+            Vector2 tempPos = rat.ratPos + rat.NORTH;
+            //bool isInside = this->IsInsideGrid(ratPos.x, ratPos.y);
+            //bool isItFloor = this->tileMap.IsItFloor(ratPos.x, ratPos.y);
+            if (rat.IsTraversible(tempPos))
+            {
+                //this->ratPos = this->ratPos + this->NORTH;
+                rat.ratScreenPosY -= rat.tileSizeY;
+            }
+        }
+        if (IsKeyPressed(KEY_A))
+        {
+            Vector2 tempPos = rat.ratPos + rat.WEST;
+            //bool canRatGoW = this->tileMap.IsTraversible(ratPos);
+            if (rat.IsTraversible(tempPos))
+            {
+                //this->ratPos = this->ratPos + this->WEST;
+                rat.ratScreenPosX -= rat.tileSizeX;
+            }
+        }
+        if (IsKeyPressed(KEY_S))
+        {
+            Vector2 tempPos = rat.ratPos + rat.SOUTH;
+            //bool canRatGoS = this->tileMap.IsTraversible(ratPos);
+            if (rat.IsTraversible(tempPos))
+            {
+                //this->ratPos = this->ratPos + this->SOUTH;
+                rat.ratScreenPosY += rat.tileSizeY;
+            }
+        }
+        if (IsKeyPressed(KEY_D))
+        {
+            Vector2 tempPos = rat.ratPos + rat.EAST;
+            //bool canRatGoE = this->tileMap.IsTraversible(ratPos);
+            if (rat.IsTraversible(tempPos))
+            {
+                //this->ratPos = this->EAST;
+                rat.ratScreenPosX += rat.tileSizeX;
+            }
         }
 
         BeginDrawing();
@@ -43,24 +87,23 @@ int main(void)
             }
             if (ImGui::Button("Spawn Rat"))
             {
-                rat = new Rat();
-                rat->SpawnRat();
             }
             rlImGuiEnd();
         }
 
         map.DrawTiles();
         map.DrawBorders();
-        if(rat != nullptr)
-        DrawTexture(ratTexture, rat->ratScreenPosX, rat->ratScreenPosY, WHITE);
+        //if (rat != nullptr)
+            DrawTexture(ratTexture, rat.ratScreenPosX, rat.ratScreenPosY, WHITE);
+
 
         DrawFPS(10, 10);
         DrawText("Press ~ to open/close GUI", 10, 30, 20, GRAY);
         EndDrawing();
     }
     
-    delete rat;
-    rat = nullptr;
+    //delete rat;
+    //rat = nullptr;
     rlImGuiShutdown();
     CloseWindow();
     return 0;

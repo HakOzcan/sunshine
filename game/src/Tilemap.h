@@ -23,6 +23,9 @@ public:
 	const Vector2 SOUTH = { 1,0 };
 	const Vector2 EAST = { 0,1 };
 	const Vector2 WEST = { 0,-1 };
+	Vector2 ratPos;
+	float ratScreenPosX;
+	float ratScreenPosY;
 	Color tileColors[(int)Tile::Count];
 
 	Tile tiles[MAP_WIDTH][MAP_HEIGHT];
@@ -33,17 +36,34 @@ public:
 		tileColors[(int)Tile::Wall] = BLACK;
 	}
 
+	Tilemap(Vector2 ratPosition)
+	{
+		ratPos = ScreenPosToTilePos(ratPosition);
+		ratScreenPosX = TilePosToScreenPos(ratPos).x;
+		ratScreenPosY = TilePosToScreenPos(ratPos).y;
+	}
+
 	int GetGridWidth() { return MAP_WIDTH; }
 	int GetGridHeight() { return MAP_HEIGHT; }
 
-	Tile GetTile(int x, int y)
+	Tile& GetTile(int x, int y)
 	{
 		return tiles[x][y];
 	}
 
 	void SetTile(int x, int y, Tile type)
 	{
-		this->tiles[x][y] = type;
+		tiles[x][y] = type;
+	}
+
+	bool IsItFloor(int x, int y)
+	{
+		bool isItFloor = false;
+		if (GetTile(static_cast<int>(x), static_cast<int>(y)) == Tile::Floor)
+		{
+			isItFloor = true;
+		}
+		return isItFloor;
 	}
 
 	bool IsInsideGrid(int x, int y)
@@ -84,9 +104,9 @@ public:
 				int rollForWall = rand() % 100;
 
 				if (rollForWall >= chanceOfWall)
-					this->SetTile(x, y, Tile::Floor);
+					SetTile(x, y, Tile::Floor);
 				else
-					this->SetTile(x, y, Tile::Wall);
+					SetTile(x, y, Tile::Wall);
 
 			}
 		}
@@ -102,16 +122,23 @@ public:
 
 	bool IsTraversible(Vector2 tilePosition)
 	{
-		bool isTraversible = false;
+		//static bool isTraversible = false;
 		if (IsInsideGrid(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)))
 		{
-			if (GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)) == Tile::Floor)
-			{
-				isTraversible = true;
-			}
+			if (GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)) == Tile::Floor) return true;
 		}
-		return isTraversible;
+		return false;
 	}
+
+	//bool IsTraversible(Vector2 tilePosition)
+	//{
+	//	bool isTraversible = false;
+	//	if (GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)) == Tile::Floor)
+	//	{
+	//		isTraversible = true;
+	//	}
+	//	return isTraversible;
+	//}
 
 	std::vector<Vector2> GetTraversibleTilesAdjacentTo(Vector2 tilePos)
 	{
@@ -163,6 +190,5 @@ public:
 			}
 		}
 	}
-
 
 };
