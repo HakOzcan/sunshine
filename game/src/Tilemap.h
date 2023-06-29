@@ -48,7 +48,8 @@ public:
 
 	Tile& GetTile(int x, int y)
 	{
-		return tiles[x][y];
+		Tile tileType = tiles[x][y];
+		return tileType;
 	}
 
 	void SetTile(int x, int y, Tile type)
@@ -123,9 +124,14 @@ public:
 	bool IsTraversible(Vector2 tilePosition)
 	{
 		//static bool isTraversible = false;
-		if (IsInsideGrid(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)))
+		Vector2 tilePos = tilePosition;
+		if (IsInsideGrid(static_cast<int>(tilePos.x), static_cast<int>(tilePos.y)))
 		{
-			if (GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)) == Tile::Floor) return true;
+			//tiles[1][1] = GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y));
+			//tiles[(int)tilePos.x][(int)tilePos.y] = GetTile(static_cast<float>(tilePos.x), static_cast<float>(tilePos.y));
+			int x = tilePosition.x;
+			int y = tilePosition.y;
+			if (tiles[x][y] == Tile::Floor) return true;
 		}
 		return false;
 	}
