@@ -19,10 +19,10 @@ class Tilemap
 public:
 	float tileSizeX = 100;
 	float tileSizeY = 100;
-	const Vector2 NORTH = { -1,0 };
-	const Vector2 SOUTH = { 1,0 };
-	const Vector2 EAST = { 0,1 };
-	const Vector2 WEST = { 0,-1 };
+	const Vector2 NORTH = { 0,-1 };
+	const Vector2 SOUTH = { 0,1 };
+	const Vector2 EAST = { 1,0 };
+	const Vector2 WEST = {-1,0 };
 	Vector2 ratPos;
 	float ratScreenPosX;
 	float ratScreenPosY;
@@ -46,15 +46,14 @@ public:
 	int GetGridWidth() { return MAP_WIDTH; }
 	int GetGridHeight() { return MAP_HEIGHT; }
 
-	Tile& GetTile(int x, int y)
+	Tile& GetTile(int a, int b)
 	{
-		Tile tileType = tiles[x][y];
-		return tileType;
+		return tiles[a][b];
 	}
 
 	void SetTile(int x, int y, Tile type)
 	{
-		tiles[x][y] = type;
+		this->tiles[x][y] = type;
 	}
 
 	bool IsItFloor(int x, int y)
@@ -97,9 +96,9 @@ public:
 
 	void RandomizeMap()
 	{
-		for (int x = 0; x < this->GetGridWidth(); x++)
+		for (int x = 0; x < GetGridWidth(); x++)
 		{
-			for (int y = 0; y < this->GetGridHeight(); y++)
+			for (int y = 0; y < GetGridHeight(); y++)
 			{
 				int chanceOfWall = 40;
 				int rollForWall = rand() % 100;
@@ -131,7 +130,7 @@ public:
 			//tiles[(int)tilePos.x][(int)tilePos.y] = GetTile(static_cast<float>(tilePos.x), static_cast<float>(tilePos.y));
 			int x = tilePosition.x;
 			int y = tilePosition.y;
-			if (tiles[x][y] == Tile::Floor) return true;
+			if (GetTile(static_cast<int>(tilePosition.x), static_cast<int>(tilePosition.y)) == Tile::Floor) return true;
 		}
 		return false;
 	}

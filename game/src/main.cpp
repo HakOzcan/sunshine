@@ -36,9 +36,10 @@ int main(void)
             Vector2 tempPos = rat.ratPos + rat.NORTH;
             //bool isInside = this->IsInsideGrid(ratPos.x, ratPos.y);
             //bool isItFloor = this->tileMap.IsItFloor(ratPos.x, ratPos.y);
-            if (rat.IsTraversible(tempPos))
+            if (map.IsTraversible(tempPos))
             {
                 //this->ratPos = this->ratPos + this->NORTH;
+                rat.ratPos = rat.ratPos + rat.NORTH;
                 rat.ratScreenPosY -= rat.tileSizeY;
             }
         }
@@ -46,9 +47,10 @@ int main(void)
         {
             Vector2 tempPos = rat.ratPos + rat.WEST;
             //bool canRatGoW = this->tileMap.IsTraversible(ratPos);
-            if (rat.IsTraversible(tempPos))
+            if (map.IsTraversible(tempPos))
             {
                 //this->ratPos = this->ratPos + this->WEST;
+                rat.ratPos = rat.ratPos + rat.WEST;
                 rat.ratScreenPosX -= rat.tileSizeX;
             }
         }
@@ -56,9 +58,10 @@ int main(void)
         {
             Vector2 tempPos = rat.ratPos + rat.SOUTH;
             //bool canRatGoS = this->tileMap.IsTraversible(ratPos);
-            if (rat.IsTraversible(tempPos))
+            if (map.IsTraversible(tempPos))
             {
                 //this->ratPos = this->ratPos + this->SOUTH;
+                rat.ratPos = rat.ratPos + rat.SOUTH;
                 rat.ratScreenPosY += rat.tileSizeY;
             }
         }
@@ -66,9 +69,10 @@ int main(void)
         {
             Vector2 tempPos = rat.ratPos + rat.EAST;
             //bool canRatGoE = this->tileMap.IsTraversible(ratPos);
-            if (rat.IsTraversible(tempPos))
+            if (map.IsTraversible(tempPos))
             {
                 //this->ratPos = this->EAST;
+                rat.ratPos = rat.ratPos + rat.EAST;
                 rat.ratScreenPosX += rat.tileSizeX;
             }
         }
@@ -102,8 +106,6 @@ int main(void)
         EndDrawing();
     }
     
-    //delete rat;
-    //rat = nullptr;
     rlImGuiShutdown();
     CloseWindow();
     return 0;
